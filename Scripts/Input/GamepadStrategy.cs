@@ -29,6 +29,16 @@ public class GamepadStrategy : IInputStrategy
     /// </summary>
     public event Action? OnCancel;
 
+    /// <summary>
+    /// 当顺时针旋转时触发。
+    /// </summary>
+    public event Action? OnRotateClockwise;
+
+    /// <summary>
+    /// 当逆时针旋转时触发。
+    /// </summary>
+    public event Action? OnRotateCounterClockwise;
+
     // Input Map 中定义的动作名称
     private const string ActionUp = "cursor_up";
     private const string ActionDown = "cursor_down";
@@ -36,6 +46,8 @@ public class GamepadStrategy : IInputStrategy
     private const string ActionRight = "cursor_right";
     private const string ActionMain = "interact_main";
     private const string ActionSecondary = "interact_secondary";
+    private const string ActionRotateCW = "rotate_cw";
+    private const string ActionRotateCCW = "rotate_ccw";
 
     public GamepadStrategy(int boardRows, int boardCols, Vector2I? initialPos = null)
     {
@@ -95,6 +107,18 @@ public class GamepadStrategy : IInputStrategy
         if (@event.IsAction(ActionSecondary))
         {
             OnCancel?.Invoke();
+            return true;
+        }
+
+        // 旋转按钮
+        if (@event.IsAction(ActionRotateCW))
+        {
+            OnRotateClockwise?.Invoke();
+            return true;
+        }
+        if (@event.IsAction(ActionRotateCCW))
+        {
+            OnRotateCounterClockwise?.Invoke();
             return true;
         }
 

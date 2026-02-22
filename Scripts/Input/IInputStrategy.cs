@@ -1,3 +1,4 @@
+using System;
 using Godot;
 
 namespace PictoMino.Input;
@@ -34,4 +35,14 @@ public interface IInputStrategy
     /// 获取当前 Ghost 的目标位置（棋盘坐标）。
     /// </summary>
     Vector2I? GetGhostGridPosition();
+
+    /// <summary>
+    /// 当顺时针旋转时触发。
+    /// </summary>
+    event Action? OnRotateClockwise;
+
+    /// <summary>
+    /// 当逆时针旋转时触发。
+    /// </summary>
+    event Action? OnRotateCounterClockwise;
 }

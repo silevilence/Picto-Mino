@@ -56,6 +56,16 @@ public partial class InputDirector : Node
 	/// </summary>
 	public event Action? OnCancel;
 
+	/// <summary>
+	/// 当顺时针旋转时触发。
+	/// </summary>
+	public event Action? OnRotateClockwise;
+
+	/// <summary>
+	/// 当逆时针旋转时触发。
+	/// </summary>
+	public event Action? OnRotateCounterClockwise;
+
 	public override void _Ready()
 	{
 		_boardView = GetNodeOrNull<BoardView>("%BoardView");
@@ -130,12 +140,16 @@ public partial class InputDirector : Node
 		_mouseStrategy.OnGridPositionChanged += pos => OnGhostPositionChanged?.Invoke(pos);
 		_mouseStrategy.OnInteract += pos => OnInteract?.Invoke(pos);
 		_mouseStrategy.OnCancel += () => OnCancel?.Invoke();
+		_mouseStrategy.OnRotateClockwise += () => OnRotateClockwise?.Invoke();
+		_mouseStrategy.OnRotateCounterClockwise += () => OnRotateCounterClockwise?.Invoke();
 
 		// 初始化手柄策略
 		_gamepadStrategy = new GamepadStrategy(BoardRows, BoardCols);
 		_gamepadStrategy.OnGridPositionChanged += pos => OnGhostPositionChanged?.Invoke(pos);
 		_gamepadStrategy.OnInteract += pos => OnInteract?.Invoke(pos);
 		_gamepadStrategy.OnCancel += () => OnCancel?.Invoke();
+		_gamepadStrategy.OnRotateClockwise += () => OnRotateClockwise?.Invoke();
+		_gamepadStrategy.OnRotateCounterClockwise += () => OnRotateCounterClockwise?.Invoke();
 	}
 
 	/// <summary>

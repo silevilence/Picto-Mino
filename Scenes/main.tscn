@@ -1,9 +1,12 @@
-[gd_scene load_steps=5 format=3 uid="uid://c5plgfw48y8rx"]
+[gd_scene load_steps=8 format=3 uid="uid://c5plgfw48y8rx"]
 
 [ext_resource type="Script" path="res://Scripts/View/GameController.cs" id="1_gc"]
 [ext_resource type="Script" path="res://Scripts/View/BoardView.cs" id="2_bv"]
 [ext_resource type="Script" path="res://Scripts/Input/InputDirector.cs" id="3_id"]
 [ext_resource type="Script" path="res://Scripts/Input/GhostHand.cs" id="4_gh"]
+[ext_resource type="Script" path="res://Scripts/View/PaletteView.cs" id="5_pv"]
+[ext_resource type="Script" path="res://Scripts/View/WinOverlay.cs" id="6_wo"]
+[ext_resource type="Script" path="res://Scripts/View/LevelSelectMenu.cs" id="7_ls"]
 
 [node name="Game" type="Node"]
 script = ExtResource("1_gc")
@@ -12,9 +15,11 @@ DefaultCols = 10
 
 [node name="BoardView" type="Node2D" parent="."]
 unique_name_in_owner = true
-position = Vector2(100, 100)
+position = Vector2(200, 20)
 script = ExtResource("2_bv")
 CellSize = 32
+HintAreaWidth = 3
+HintAreaHeight = 3
 
 [node name="GridLayer" type="TileMapLayer" parent="BoardView"]
 unique_name_in_owner = true
@@ -23,8 +28,26 @@ unique_name_in_owner = true
 unique_name_in_owner = true
 script = ExtResource("4_gh")
 
+[node name="PaletteView" type="Control" parent="."]
+unique_name_in_owner = true
+offset_left = 15.0
+offset_top = 120.0
+offset_right = 180.0
+offset_bottom = 500.0
+script = ExtResource("5_pv")
+SlotSpacing = 12
+CellSize = 28
+
 [node name="InputDirector" type="Node" parent="."]
 unique_name_in_owner = true
 script = ExtResource("3_id")
 BoardRows = 10
 BoardCols = 10
+
+[node name="WinOverlay" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+script = ExtResource("6_wo")
+
+[node name="LevelSelectMenu" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+script = ExtResource("7_ls")

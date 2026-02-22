@@ -478,4 +478,109 @@ public class BoardDataTests
         Assert.That(board.TryPlace(lShape, 0, 0, 1), Is.True);
         Assert.That(board.CheckWinCondition(), Is.True);  // 完美匹配
     }
+
+    // ─── 提示数字 (Hints) ──────────────────────────────
+
+    [Test]
+    public void GetRowHints_NoTarget_ReturnsFullRow()
+    {
+        var board = new BoardData(3, 5); // 无 Target，视为全填充
+        var hints = board.GetRowHints(0);
+
+        Assert.That(hints, Is.EqualTo(new[] { 5 }));
+    }
+
+    [Test]
+    public void GetColHints_NoTarget_ReturnsFullColumn()
+    {
+        var board = new BoardData(4, 3); // 无 Target，视为全填充
+        var hints = board.GetColHints(0);
+
+        Assert.That(hints, Is.EqualTo(new[] { 4 }));
+    }
+
+    [Test]
+    public void GetRowHints_WithTarget_CalculatesCorrectly()
+    {
+        var target = new bool[,]
+        {
+            { true, true, false, true, true, true }
+        };
+        var board = new BoardData(1, 6, target);
+
+        var hints = board.GetRowHints(0);
+
+        Assert.That(hints, Is.EqualTo(new[] { 2, 3 }));
+    }
+
+    [Test]
+    public void GetColHints_WithTarget_CalculatesCorrectly()
+    {
+        var target = new bool[,]
+        {
+            { true },
+            { true },
+            { false },
+            { true },
+            { false },
+            { true }
+        };
+        var board = new BoardData(6, 1, target);
+
+        var hints = board.GetColHints(0);
+
+        Assert.That(hints, Is.EqualTo(new[] { 2, 1, 1 }));
+    }
+
+    [Test]
+    public void GetRowHints_AllEmpty_ReturnsZero()
+    {
+        var target = new bool[,]
+        {
+            { false, false, false }
+        };
+        var board = new BoardData(1, 3, target);
+
+        var hints = board.GetRowHints(0);
+
+        Assert.That(hints, Is.EqualTo(new[] { 0 }));
+    }
+
+    [Test]
+    public void GetAllRowHints_ReturnsAllRows()
+    {
+        var target = new bool[,]
+        {
+            { true, true, false },
+            { false, true, true },
+            { true, false, true }
+        };
+        var board = new BoardData(3, 3, target);
+
+        var allHints = board.GetAllRowHints();
+
+        Assert.That(allHints.Length, Is.EqualTo(3));
+        Assert.That(allHints[0], Is.EqualTo(new[] { 2 }));
+        Assert.That(allHints[1], Is.EqualTo(new[] { 2 }));
+        Assert.That(allHints[2], Is.EqualTo(new[] { 1, 1 }));
+    }
+
+    [Test]
+    public void GetAllColHints_ReturnsAllColumns()
+    {
+        var target = new bool[,]
+        {
+            { true, false, true },
+            { true, true, false },
+            { false, true, true }
+        };
+        var board = new BoardData(3, 3, target);
+
+        var allHints = board.GetAllColHints();
+
+        Assert.That(allHints.Length, Is.EqualTo(3));
+        Assert.That(allHints[0], Is.EqualTo(new[] { 2 }));
+        Assert.That(allHints[1], Is.EqualTo(new[] { 2 }));
+        Assert.That(allHints[2], Is.EqualTo(new[] { 1, 1 }));
+    }
 }

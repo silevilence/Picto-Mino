@@ -30,6 +30,16 @@ public class MouseStrategy : IInputStrategy
     /// </summary>
     public event Action? OnCancel;
 
+    /// <summary>
+    /// 当顺时针旋转时触发（鼠标滚轮向上）。
+    /// </summary>
+    public event Action? OnRotateClockwise;
+
+    /// <summary>
+    /// 当逆时针旋转时触发（鼠标滚轮向下）。
+    /// </summary>
+    public event Action? OnRotateCounterClockwise;
+
     public MouseStrategy(BoardView boardView, Node inputNode)
     {
         _boardView = boardView ?? throw new ArgumentNullException(nameof(boardView));
@@ -65,6 +75,16 @@ public class MouseStrategy : IInputStrategy
             else if (mouseButton.ButtonIndex == MouseButton.Right)
             {
                 OnCancel?.Invoke();
+                return true;
+            }
+            else if (mouseButton.ButtonIndex == MouseButton.WheelUp)
+            {
+                OnRotateClockwise?.Invoke();
+                return true;
+            }
+            else if (mouseButton.ButtonIndex == MouseButton.WheelDown)
+            {
+                OnRotateCounterClockwise?.Invoke();
                 return true;
             }
         }
