@@ -2,61 +2,116 @@
 
 ## Game Concept
 
-**Picto Mino** is a hybrid puzzle game that combines the logic of **Nonograms** (Picross) with the spatial reasoning of **Polyominoes** (Tetris-like blocks).
-- **Core Loop:** Instead of filling cells one by one (like traditional Nonograms), players must place **pre-defined Polyomino shapes** onto the grid to satisfy the row/column constraints.
-- **Goal:** Correctly place all available shapes to reveal a hidden pixel-art image.
-- **Vibe:** A chill, "juicy" puzzle experience with satisfying feedback, smooth animations, and a clean, modern aesthetic.
+**Picto Mino** 是一款结合 **数织 (Nonograms/Picross)** 逻辑与 **多格骨牌 (Polyominoes)** 空间推理的混合谜题游戏。
+- **核心玩法:** 玩家需要将预定义的多格骨牌形状放置到网格上，使其满足行/列数字约束。
+- **目标:** 正确放置所有形状，揭示隐藏的像素画图案。
 
-## Key Mechanics
+## Architecture
 
-1.  **Constraint Satisfaction:** Rows and columns have numbers (e.g., "3 1") indicating the lengths of filled block groups.
-2.  **Shape Inventory:** Players are given a specific set of Polyominoes (e.g., L-shape, T-shape) that must ALL be used to solve the puzzle.
-3.  **Dual Input Support:** Seamlessly supports both Mouse (Drag & Drop) and Gamepad/Keyboard (Grid Cursor Navigation).
+### 严格的 Model/View 分离
+```
+Scripts/Core/     ← 纯 C#，命名空间 PictoMino.Core，禁止 using Godot
+Scripts/View/     ← Godot 节点，命名空间 PictoMino.View
+Scripts/Input/    ← 输入策略 (Mouse/Gamepad)
+Tests/            ← NUnit 测试，仅测试 Core 层
+```
 
-## 1. Project Philosophy & Architecture
-**Core Principle: Strict Logic/View Separation**
-- This project uses a **MVVM-like architecture**.
-- **Model (Core Logic):** Pure C# classes. NEVER reference `Godot` namespaces here. Must be testable via NUnit/xUnit without the Godot Editor running.
-- **View (Godot):** `Node`, `TileMapLayer`, `Sprite2D`. Responsible ONLY for rendering state and capturing raw input.
-- **ViewModel/Controller:** Bridges the View and Model. Converts Godot Input Events into Model commands.
+**关键原则:** `Scripts/Core/` 必须可独立编译和测试，无任何 Godot 依赖。
 
-## 2. Directory Structure
-Follow this structure strictly:
-- `Scripts/Core/` : **PURE C# ONLY**. Game rules, Board state, DLX Algorithm, Shape data. NO `using Godot;`.
-- `Scripts/View/` : Godot-specific scripts (Monobehaviors) attached to Nodes.
-- `Scripts/Input/` : Input arbitration (Mouse vs Gamepad strategies).
-- `Tests/` : Unit tests (referencing `Scripts/Core`).
-- `Scenes/` : Godot `.tscn` files.
-- `Assets/` : Art, Audio, Resources.
-- `ROADMAP.md` : High-level project roadmap and milestones.禁止修改此文件的内容。
+### 事件驱动模式
+View 通过属性 setter 订阅 Model 事件：
+```csharp
+// BoardView.cs 示例
+public BoardData? BoardData
+{
+    set {
+        if (_boardData != null) _boardData.OnCellChanged -= OnCellChanged;
+        _boardData = value;
+        if (_boardData != null) _boardData.OnCellChanged += OnCellChanged;
+    }
+}
+```
 
-## 3. Development Workflow (TDD)
-1.  **Red:** Write a failing test in `Tests/` describing the desired logic (e.g., "Placing a block on an occupied cell should return false").
-2.  **Green:** Implement the minimal code in `Scripts/Core/` to pass the test.
-3.  **Refactor:** Optimize the code.
-4.  **Integrate:** Only after the logic is solid, create/update the Godot Scene to visualize it.
+## Code Style
 
-## 4. Key Algorithms & Features
-- **Dancing Links (DLX):** Used for level generation and solving Nonogram/Polyomino constraints.
-- **Ghost Hand System:**
-  - **Mouse/Touch:** Direct manipulation (Drag & Drop). Ghost follows cursor.
-  - **Gamepad/Keyboard:** Discrete cursor movement. Ghost moves step-by-step.
-  - **State Machine:** Distinct states for `Selecting` (Palette) and `Placing` (Board).
+### 命名约定
+```csharp
+private readonly int[,] _cells;        // 私有字段: _camelCase
+public int Rows { get; }               // 公共属性: PascalCase
+public bool TryPlace(...)              // 方法: PascalCase
+public event Action<int, int>? OnCellChanged;  // 事件: On 前缀
+```
 
-## 5. Git Commit Standards
-- **Rule:** Do NOT commit automatically. Only generate commit messages when explicitly requested.
-- **Format:** `Emoji Type: Summary`
-  - If changes are complex, use a multi-line format.
-- **Emojis:**
-  - ✨ `feat`: New feature
-  - 🐛 `fix`: Bug fix
-  - 📝 `docs`: Documentation
-  - ♻️ `refactor`: Code restructuring without logic change
-  - ✅ `test`: Adding/Editing tests
-  - 🎨 `style`: Formatting/UI tweaks
+### Godot 特有
+```csharp
+public partial class BoardView : Node2D    // 必须使用 partial
+[Export] public int CellSize { get; set; } = 32;
+_boardView = GetNodeOrNull<BoardView>("%BoardView");  // % = UniqueNameInOwner
+```
 
-## 6. Godot Implementation Details
-- Use `TileMapLayer` (Godot 4.3+) for the grid rendering.
-- Use `Signal` (C# Events) to notify the View when the Model changes.
-- Avoid using `GetNode()` strings repeatedly; export typed fields (e.g., `[Export] private TileMapLayer _grid;`).
-- **Input Handling:** Use `_UnhandledInput` for gameplay logic. Use the "Input Map" names defined in Project Settings (e.g., `cursor_up`, `interact_main`).
+### 文档注释
+使用中文 XML 文档：
+```csharp
+/// <summary>棋盘网格状态。0 = 空格，正整数 = 被对应 ID 的方块占据。</summary>
+```
+
+## Build and Test
+
+```powershell
+# 构建核心库 (纯 C#)
+dotnet build Scripts/Core/PictoMino.Core.csproj
+
+# 运行所有测试
+dotnet test Tests/PictoMino.Tests.csproj
+
+# 运行特定测试
+dotnet test Tests/PictoMino.Tests.csproj --filter "FullyQualifiedName~BoardDataTests"
+
+# 带覆盖率测试
+dotnet test Tests/PictoMino.Tests.csproj --collect:"XPlat Code Coverage"
+```
+
+## Testing Patterns
+
+使用 NUnit 3.x，遵循 Arrange-Act-Assert：
+```csharp
+[Test]
+public void MethodUnderTest_Scenario_ExpectedBehavior()
+{
+    var board = new BoardData(5, 5);
+    bool result = board.TryPlace(shape, 0, 0, 1);
+    Assert.That(result, Is.True);
+}
+```
+
+**事件测试:**
+```csharp
+board.OnCellChanged += (r, c, v) => { eventRow = r; eventCol = c; };
+board.SetCell(0, 1, 7);
+Assert.That(eventRow, Is.EqualTo(0));
+```
+
+## Key Components
+
+| 文件 | 职责 |
+|------|------|
+| [BoardData.cs](Scripts/Core/BoardData.cs) | 棋盘状态，放置/移除逻辑 |
+| [ShapeData.cs](Scripts/Core/ShapeData.cs) | 多格骨牌形状定义，旋转 |
+| [ExactCoverSolver.cs](Scripts/Core/DLX/ExactCoverSolver.cs) | DLX 算法求解器 |
+| [PuzzleGenerator.cs](Scripts/Core/DLX/PuzzleGenerator.cs) | 谜题生成 |
+| [BoardView.cs](Scripts/View/BoardView.cs) | 棋盘渲染 (TileMapLayer) |
+| [GameController.cs](Scripts/View/GameController.cs) | 游戏流程协调 |
+| [InputDirector.cs](Scripts/Input/InputDirector.cs) | 输入设备自动切换 |
+
+## Conventions
+
+- **坐标系:** 使用 `(row, col)` 顺序，row 对应 Y 轴
+- **形状 ID:** 正整数表示占据，0 表示空格
+- **TDD:** 先写测试 → 实现 Core → 最后集成 View
+- **ROADMAP.md:** 只读，禁止Agent修改，只允许人工更新
+
+## Git Commits
+
+仅在明确要求时生成提交消息，格式：`Emoji Type: Summary`
+- ✨ `feat` | 🐛 `fix` | 📝 `docs` | ♻️ `refactor` | ✅ `test` | 🎨 `style`
+- 可选的详细描述
