@@ -2,16 +2,6 @@
 
 ## 🏗️ 开发中 (In Progress)
 
-### Phase 3: 算法与关卡生成 (DLX)
-- [ ] **DLX 算法移植**
-    - [ ] 实现 Dancing Links 基础数据结构 (Node, Column)。
-    - [ ] 实现精确覆盖问题 (Exact Cover) 求解器。
-- [ ] **关卡生成器**
-    - [ ] 编写工具：将当前棋盘状态导出为 DLX 矩阵。
-    - [ ] 编写生成器：随机生成可解的拼图谜题。
-
-## 📅 计划中 (Planned)
-
 ### Phase 4: UI 与 游戏流程
 - [ ] **侧边栏 (Palette)**
     - [ ] UI 实现：显示当前可用方块列表。
@@ -19,6 +9,8 @@
 - [ ] **游戏循环**
     - [ ] 胜利结算界面。
     - [ ] 关卡选择菜单。
+
+## 📅 计划中 (Planned)
 
 ### Phase 5: 视觉表现 (Juice & Polish)
 - [ ] **Vibe Coding**
@@ -57,3 +49,11 @@
         - [x] 实现 `MouseStrategy`：Ghost 跟随鼠标实时移动。
         - [x] 实现 `GamepadStrategy`：Ghost 响应离散方向键。
         - [x] 实现 `InputDirector`：在不同输入设备间自动切换策略。
+
+### Phase 3: 算法与关卡生成 (DLX)
+- [x] **DLX 算法移植**
+    - [x] 实现 Dancing Links 基础数据结构 (Node, Column)。
+    - [x] 实现精确覆盖问题 (Exact Cover) 求解器。
+- [x] **关卡生成器**
+    - [x] 编写工具：将当前棋盘状态导出为 DLX 矩阵。
+    - [x] 编写生成器：随机生成可解的拼图谜题。
