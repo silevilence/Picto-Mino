@@ -11,9 +11,13 @@ config_version=5
 [application]
 
 config/name="PictoMino"
-run/main_scene="uid://c5plgfw48y8rx"
+run/main_scene="res://Scenes/LevelSelect.tscn"
 config/features=PackedStringArray("4.6", "C#", "GL Compatibility")
 config/icon="res://icon.svg"
+
+[autoload]
+
+GameSession="*res://Scripts/View/GameSession.cs"
 
 [dotnet]
 

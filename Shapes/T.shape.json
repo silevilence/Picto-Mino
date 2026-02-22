@@ -1,0 +1,7 @@
+{
+  "id": "T",
+  "name": "T形",
+  "matrix": ["###", ".#."],
+  "anchorRow": 0,
+  "anchorCol": 1
+}

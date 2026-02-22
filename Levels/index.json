@@ -1,0 +1,15 @@
+{
+  "chapters": [
+    {
+      "id": "tutorial",
+      "name": "教程",
+      "levels": [
+        "tutorial_01.level",
+        "tutorial_02.level",
+        "tutorial_03.level",
+        "tutorial_04.level",
+        "tutorial_05.level"
+      ]
+    }
+  ]
+}

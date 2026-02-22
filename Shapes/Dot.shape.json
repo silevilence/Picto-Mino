@@ -1,0 +1,7 @@
+{
+  "id": "Dot",
+  "name": "单格",
+  "matrix": ["#"],
+  "anchorRow": 0,
+  "anchorCol": 0
+}

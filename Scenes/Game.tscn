@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://c5plgfw48y8rx"]
+[gd_scene format=3 uid="uid://tuuk8wun6emi"]
 
 [ext_resource type="Script" path="res://Scripts/View/GameController.cs" id="1_gc"]
 [ext_resource type="Script" path="res://Scripts/View/BoardView.cs" id="2_bv"]
@@ -6,7 +6,6 @@
 [ext_resource type="Script" path="res://Scripts/Input/GhostHand.cs" id="4_gh"]
 [ext_resource type="Script" path="res://Scripts/View/PaletteView.cs" id="5_pv"]
 [ext_resource type="Script" path="res://Scripts/View/WinOverlay.cs" id="6_wo"]
-[ext_resource type="Script" path="res://Scripts/View/LevelSelectMenu.cs" id="7_ls"]
 
 [node name="Game" type="Node"]
 script = ExtResource("1_gc")
@@ -47,7 +46,3 @@ BoardCols = 10
 [node name="WinOverlay" type="CanvasLayer" parent="."]
 unique_name_in_owner = true
 script = ExtResource("6_wo")
-
-[node name="LevelSelectMenu" type="CanvasLayer" parent="."]
-unique_name_in_owner = true
-script = ExtResource("7_ls")
