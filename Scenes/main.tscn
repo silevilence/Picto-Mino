@@ -1,0 +1,30 @@
+[gd_scene load_steps=5 format=3 uid="uid://c5plgfw48y8rx"]
+
+[ext_resource type="Script" path="res://Scripts/View/GameController.cs" id="1_gc"]
+[ext_resource type="Script" path="res://Scripts/View/BoardView.cs" id="2_bv"]
+[ext_resource type="Script" path="res://Scripts/Input/InputDirector.cs" id="3_id"]
+[ext_resource type="Script" path="res://Scripts/Input/GhostHand.cs" id="4_gh"]
+
+[node name="Game" type="Node"]
+script = ExtResource("1_gc")
+DefaultRows = 10
+DefaultCols = 10
+
+[node name="BoardView" type="Node2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(100, 100)
+script = ExtResource("2_bv")
+CellSize = 32
+
+[node name="GridLayer" type="TileMapLayer" parent="BoardView"]
+unique_name_in_owner = true
+
+[node name="GhostHand" type="Node2D" parent="BoardView"]
+unique_name_in_owner = true
+script = ExtResource("4_gh")
+
+[node name="InputDirector" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("3_id")
+BoardRows = 10
+BoardCols = 10

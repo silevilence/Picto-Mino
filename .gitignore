@@ -1,0 +1,28 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# .NET / C# build outputs
+bin/
+obj/
+*.user
+*.suo
+*.userprefs
+*.csproj.old
+
+# NuGet
+*.nupkg
+**/packages/
+*.nuget.props
+*.nuget.targets
+
+# IDE
+.vs/
+*.DotSettings.user
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Test results
+TestResults/

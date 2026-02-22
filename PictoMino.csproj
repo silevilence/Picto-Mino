@@ -1,0 +1,16 @@
+<Project Sdk="Godot.NET.Sdk/4.6.1">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <RootNamespace>PictoMino</RootNamespace>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- 排除独立子项目，避免源码被重复编译 -->
+    <Compile Remove="Scripts\Core\**" />
+    <Compile Remove="Tests\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Scripts\Core\PictoMino.Core.csproj" />
+  </ItemGroup>
+</Project>

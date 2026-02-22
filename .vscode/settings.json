@@ -1,0 +1,7 @@
+{
+    "godotTools.editorPath.godot4": "d:\\scoop\\user\\apps\\godot-mono\\current\\godot-mono.exe",
+    "chat.tools.terminal.autoApprove": {
+        "dotnet test": true,
+        "dotnet build": true
+    }
+}

@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Scripts/" />
+  <Folder Name="/Scripts/Core/">
+    <Project Path="Scripts/Core/PictoMino.Core.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/PictoMino.Tests.csproj" />
+  </Folder>
+  <Project Path="PictoMino.csproj" />
+</Solution>
