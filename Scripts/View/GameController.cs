@@ -4,6 +4,7 @@ using Godot;
 using PictoMino.Core;
 using PictoMino.Input;
 using PictoMino.View;
+using PictoMino.View.Effects;
 using static PictoMino.Core.BoardData;
 
 namespace PictoMino;
@@ -236,6 +237,7 @@ public partial class GameController : Node
 		{
 			_placedShapes[shapeId] = paletteIndex;
 			_nextShapeId++;
+			_boardView?.PlayPlacementEffect(shapeId);
 		}
 
 		return success;
@@ -490,6 +492,8 @@ public partial class GameController : Node
 
 		_placedShapes[shapeId] = paletteIndex;
 		_nextShapeId++;
+
+		_boardView?.PlayPlacementEffect(shapeId);
 
 		return true;
 	}

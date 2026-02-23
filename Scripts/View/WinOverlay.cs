@@ -1,5 +1,6 @@
 using System;
 using Godot;
+using PictoMino.View.Effects;
 
 namespace PictoMino.View;
 
@@ -69,6 +70,8 @@ public partial class WinOverlay : CanvasLayer
 
         Show();
 
+        PlayWinParticles();
+
         if (hasNextLevel)
         {
             _nextLevelButton?.GrabFocus();
@@ -77,6 +80,19 @@ public partial class WinOverlay : CanvasLayer
         {
             _retryButton?.GrabFocus();
         }
+    }
+
+    private void PlayWinParticles()
+    {
+        var viewport = GetViewport();
+        if (viewport == null) return;
+
+        var size = viewport.GetVisibleRect().Size;
+        var center = size / 2f;
+
+        var effect = new WinParticleEffect();
+        AddChild(effect);
+        effect.Play(center);
     }
 
     /// <summary>

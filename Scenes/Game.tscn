@@ -6,11 +6,20 @@
 [ext_resource type="Script" path="res://Scripts/Input/GhostHand.cs" id="4_gh"]
 [ext_resource type="Script" path="res://Scripts/View/PaletteView.cs" id="5_pv"]
 [ext_resource type="Script" path="res://Scripts/View/WinOverlay.cs" id="6_wo"]
+[ext_resource type="Script" path="res://Scripts/View/Effects/DynamicBackground.cs" id="7_bg"]
 
 [node name="Game" type="Node"]
 script = ExtResource("1_gc")
 DefaultRows = 10
 DefaultCols = 10
+
+[node name="DynamicBackground" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("7_bg")
 
 [node name="BoardView" type="Node2D" parent="."]
 unique_name_in_owner = true

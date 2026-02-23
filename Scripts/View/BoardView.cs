@@ -1,5 +1,7 @@
 using Godot;
 using PictoMino.Core;
+using PictoMino.View.Effects;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace PictoMino.View;
@@ -62,6 +64,7 @@ public partial class BoardView : Node2D
     private BoardData? _boardData;
     private int[][]? _rowHints;
     private int[][]? _colHints;
+    private readonly Dictionary<int, List<Vector2I>> _placedShapeCells = new();
 
     /// <summary>
     /// 棋盘内容区域相对于 BoardView 原点的偏移（为提示数字留空间）。
@@ -461,7 +464,39 @@ public partial class BoardView : Node2D
     /// </summary>
     private void OnCellChanged(int row, int col, int newValue)
     {
+        if (newValue > 0)
+        {
+            if (!_placedShapeCells.ContainsKey(newValue))
+            {
+                _placedShapeCells[newValue] = new List<Vector2I>();
+            }
+            _placedShapeCells[newValue].Add(new Vector2I(col, row));
+        }
         QueueRedraw();
+    }
+
+    /// <summary>
+    /// 播放形状放置动画。
+    /// </summary>
+    public void PlayPlacementEffect(int shapeId)
+    {
+        if (!_placedShapeCells.TryGetValue(shapeId, out var cells) || cells.Count == 0)
+            return;
+
+        var effect = new PlacementEffect();
+        AddChild(effect);
+        effect.Position = BoardOffset;
+        effect.Play(new List<Vector2I>(cells), CellSize, FilledCellColor);
+
+        _placedShapeCells.Remove(shapeId);
+    }
+
+    /// <summary>
+    /// 清除形状追踪数据。
+    /// </summary>
+    public void ClearShapeTracking()
+    {
+        _placedShapeCells.Clear();
     }
 
     /// <summary>
