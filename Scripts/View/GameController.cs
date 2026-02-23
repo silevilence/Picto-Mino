@@ -84,6 +84,8 @@ public partial class GameController : Node
 		ValidateExports();
 		ConnectSignals();
 
+		GetTree().Root.SizeChanged += OnViewportSizeChanged;
+
 		// 从 GameSession 获取待加载的关卡
 		var pendingLevel = GameSession.Instance?.PendingLevel;
 		if (pendingLevel != null)
@@ -94,6 +96,56 @@ public partial class GameController : Node
 		{
 			GD.PrintErr("GameController: No pending level to load.");
 		}
+	}
+
+	public override void _ExitTree()
+	{
+		GetTree().Root.SizeChanged -= OnViewportSizeChanged;
+	}
+
+	private void OnViewportSizeChanged()
+	{
+		UpdateLayout();
+	}
+
+	private void UpdateLayout()
+	{
+		if (_boardView == null || _boardData == null) return;
+
+		var viewportSize = GetViewport().GetVisibleRect().Size;
+
+		float paletteWidth = 180;
+		float margin = 20;
+
+		float availableWidth = viewportSize.X - paletteWidth - margin * 3;
+		float availableHeight = viewportSize.Y - margin * 2;
+
+		int cellSizeByWidth = (int)(availableWidth / (_boardData.Cols + 2));
+		int cellSizeByHeight = (int)(availableHeight / (_boardData.Rows + 2));
+		int newCellSize = Mathf.Max(Mathf.Min(cellSizeByWidth, cellSizeByHeight), 24);
+
+		_boardView.CellSize = newCellSize;
+
+		var boardOffset = _boardView.BoardOffset;
+		float boardTotalWidth = boardOffset.X + _boardData.Cols * newCellSize;
+		float boardTotalHeight = boardOffset.Y + _boardData.Rows * newCellSize;
+
+		float boardX = paletteWidth + margin * 2 + (availableWidth - boardTotalWidth) / 2;
+		float boardY = margin + (availableHeight - boardTotalHeight) / 2;
+
+		boardX = Mathf.Max(boardX, paletteWidth + margin * 2);
+		boardY = Mathf.Max(boardY, margin);
+
+		_boardView.Position = new Vector2(boardX, boardY);
+		_boardView.QueueRedraw();
+
+		if (_paletteView != null)
+		{
+			_paletteView.Position = new Vector2(margin, margin);
+			_paletteView.Size = new Vector2(paletteWidth, viewportSize.Y - margin * 2);
+		}
+
+		_ghostHand?.QueueRedraw();
 	}
 
 	public override void _Process(double delta)
@@ -128,6 +180,7 @@ public partial class GameController : Node
 		_paletteData.SelectNext();
 
 		SetGameState(GameState.Playing);
+		UpdateLayout();
 		GD.Print($"GameController: Loaded level '{level.Name}'.");
 	}
 
@@ -297,6 +350,8 @@ public partial class GameController : Node
 			_inputDirector.OnCancel += OnCancel;
 			_inputDirector.OnRotateClockwise += OnRotateClockwise;
 			_inputDirector.OnRotateCounterClockwise += OnRotateCounterClockwise;
+			_inputDirector.OnSelectNextShape += OnSelectNextShape;
+			_inputDirector.OnSelectPreviousShape += OnSelectPreviousShape;
 		}
 
 		if (_paletteView != null)
@@ -441,6 +496,18 @@ public partial class GameController : Node
 			var pos = _ghostHand.GridPosition.Value;
 			UpdateGhostPlacementState(pos.X, pos.Y);
 		}
+	}
+
+	private void OnSelectNextShape()
+	{
+		if (_gameState != GameState.Playing || _paletteData == null) return;
+		_paletteData.SelectNext();
+	}
+
+	private void OnSelectPreviousShape()
+	{
+		if (_gameState != GameState.Playing || _paletteData == null) return;
+		_paletteData.SelectPrevious();
 	}
 
 	private void UpdateGhostPlacementState(int col, int row)

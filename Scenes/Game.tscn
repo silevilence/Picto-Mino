@@ -23,7 +23,6 @@ script = ExtResource("7_bg")
 
 [node name="BoardView" type="Node2D" parent="."]
 unique_name_in_owner = true
-position = Vector2(200, 20)
 script = ExtResource("2_bv")
 CellSize = 32
 HintAreaWidth = 3
@@ -38,10 +37,7 @@ script = ExtResource("4_gh")
 
 [node name="PaletteView" type="Control" parent="."]
 unique_name_in_owner = true
-offset_left = 15.0
-offset_top = 120.0
-offset_right = 180.0
-offset_bottom = 500.0
+anchors_preset = 0
 script = ExtResource("5_pv")
 SlotSpacing = 12
 CellSize = 28

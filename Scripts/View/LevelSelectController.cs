@@ -23,6 +23,32 @@ public partial class LevelSelectController : Control
         }
     }
 
+    public override void _Process(double delta)
+    {
+        if (_levelSelectMenu == null || !_levelSelectMenu.Visible) return;
+
+        if (Godot.Input.IsActionJustPressed("cursor_right") || Godot.Input.IsActionJustPressed("ui_right"))
+        {
+            _levelSelectMenu.NavigateFocus(1);
+        }
+        else if (Godot.Input.IsActionJustPressed("cursor_left") || Godot.Input.IsActionJustPressed("ui_left"))
+        {
+            _levelSelectMenu.NavigateFocus(-1);
+        }
+        else if (Godot.Input.IsActionJustPressed("cursor_down") || Godot.Input.IsActionJustPressed("ui_down"))
+        {
+            _levelSelectMenu.NavigateFocus(1);
+        }
+        else if (Godot.Input.IsActionJustPressed("cursor_up") || Godot.Input.IsActionJustPressed("ui_up"))
+        {
+            _levelSelectMenu.NavigateFocus(-1);
+        }
+        else if (Godot.Input.IsActionJustPressed("interact_main") || Godot.Input.IsActionJustPressed("ui_accept"))
+        {
+            _levelSelectMenu.ActivateFocusedButton();
+        }
+    }
+
     private void OnLevelSelected(string levelId)
     {
         GameSession.Instance.StartLevel(levelId);

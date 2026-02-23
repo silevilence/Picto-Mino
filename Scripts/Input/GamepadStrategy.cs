@@ -39,6 +39,16 @@ public class GamepadStrategy : IInputStrategy
     /// </summary>
     public event Action? OnRotateCounterClockwise;
 
+    /// <summary>
+    /// 当选择下一个形状时触发。
+    /// </summary>
+    public event Action? OnSelectNextShape;
+
+    /// <summary>
+    /// 当选择上一个形状时触发。
+    /// </summary>
+    public event Action? OnSelectPreviousShape;
+
     // Input Map 中定义的动作名称
     private const string ActionUp = "cursor_up";
     private const string ActionDown = "cursor_down";
@@ -48,6 +58,8 @@ public class GamepadStrategy : IInputStrategy
     private const string ActionSecondary = "interact_secondary";
     private const string ActionRotateCW = "rotate_cw";
     private const string ActionRotateCCW = "rotate_ccw";
+    private const string ActionShapeNext = "shape_next";
+    private const string ActionShapePrev = "shape_prev";
 
     public GamepadStrategy(int boardRows, int boardCols, Vector2I? initialPos = null)
     {
@@ -119,6 +131,18 @@ public class GamepadStrategy : IInputStrategy
         if (@event.IsAction(ActionRotateCCW))
         {
             OnRotateCounterClockwise?.Invoke();
+            return true;
+        }
+
+        // 形状选择
+        if (@event.IsAction(ActionShapeNext))
+        {
+            OnSelectNextShape?.Invoke();
+            return true;
+        }
+        if (@event.IsAction(ActionShapePrev))
+        {
+            OnSelectPreviousShape?.Invoke();
             return true;
         }
 

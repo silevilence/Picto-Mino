@@ -68,8 +68,28 @@ public partial class BoardView : Node2D
 
     /// <summary>
     /// 棋盘内容区域相对于 BoardView 原点的偏移（为提示数字留空间）。
+    /// 根据实际提示数字动态计算。
     /// </summary>
-    public Vector2 BoardOffset => new Vector2(HintAreaWidth * CellSize, HintAreaHeight * CellSize);
+    public Vector2 BoardOffset
+    {
+        get
+        {
+            int maxRowHints = 1;
+            int maxColHints = 1;
+            if (_rowHints != null)
+            {
+                foreach (var hints in _rowHints)
+                    if (hints.Length > maxRowHints) maxRowHints = hints.Length;
+            }
+            if (_colHints != null)
+            {
+                foreach (var hints in _colHints)
+                    if (hints.Length > maxColHints) maxColHints = hints.Length;
+            }
+            float hintCellSize = CellSize * 0.7f;
+            return new Vector2(maxRowHints * hintCellSize + 10, maxColHints * hintCellSize + 10);
+        }
+    }
 
     /// <summary>
     /// 绑定的棋盘数据。设置后会自动订阅事件并刷新视图。
@@ -129,9 +149,6 @@ public partial class BoardView : Node2D
         var offset = BoardOffset;
         int rows = _boardData.Rows;
         int cols = _boardData.Cols;
-
-        // 绘制提示区域背景
-        DrawHintBackgrounds(offset, rows, cols);
 
         // 绘制主棋盘背景和格子
         DrawBoardCells(offset, rows, cols);

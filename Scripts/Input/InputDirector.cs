@@ -66,6 +66,16 @@ public partial class InputDirector : Node
 	/// </summary>
 	public event Action? OnRotateCounterClockwise;
 
+	/// <summary>
+	/// 当选择下一个形状时触发。
+	/// </summary>
+	public event Action? OnSelectNextShape;
+
+	/// <summary>
+	/// 当选择上一个形状时触发。
+	/// </summary>
+	public event Action? OnSelectPreviousShape;
+
 	public override void _Ready()
 	{
 		_boardView = GetNodeOrNull<BoardView>("%BoardView");
@@ -112,6 +122,9 @@ public partial class InputDirector : Node
 	{
 		if (_currentDevice == device && _activeStrategy != null) return;
 
+		// 切换前保存当前位置
+		Vector2I? currentPos = _activeStrategy?.GetGhostGridPosition();
+
 		_activeStrategy?.OnDeactivate();
 
 		_currentDevice = device;
@@ -121,6 +134,12 @@ public partial class InputDirector : Node
 			InputDeviceType.Gamepad => _gamepadStrategy,
 			_ => _mouseStrategy
 		};
+
+		// 切换到手柄时,同步光标位置
+		if (device == InputDeviceType.Gamepad && currentPos.HasValue && _gamepadStrategy != null)
+		{
+			_gamepadStrategy.SetCursorPosition(currentPos.Value);
+		}
 
 		_activeStrategy?.OnActivate();
 		OnDeviceChanged?.Invoke(device);
@@ -150,6 +169,8 @@ public partial class InputDirector : Node
 		_gamepadStrategy.OnCancel += () => OnCancel?.Invoke();
 		_gamepadStrategy.OnRotateClockwise += () => OnRotateClockwise?.Invoke();
 		_gamepadStrategy.OnRotateCounterClockwise += () => OnRotateCounterClockwise?.Invoke();
+		_gamepadStrategy.OnSelectNextShape += () => OnSelectNextShape?.Invoke();
+		_gamepadStrategy.OnSelectPreviousShape += () => OnSelectPreviousShape?.Invoke();
 	}
 
 	/// <summary>

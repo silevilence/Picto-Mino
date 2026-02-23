@@ -1,15 +1,17 @@
 [gd_scene format=3 uid="uid://bahnt70qem505"]
 
-[ext_resource type="Script" path="res://Scripts/View/LevelSelectController.cs" id="1_lsc"]
-[ext_resource type="Script" path="res://Scripts/View/LevelSelectMenu.cs" id="2_lsm"]
+[ext_resource type="Script" uid="uid://c6j71j6lkxoig" path="res://Scripts/View/LevelSelectController.cs" id="1_lsc"]
+[ext_resource type="Script" uid="uid://b7okpgx624lxj" path="res://Scripts/View/LevelSelectMenu.cs" id="2_lsm"]
 
-[node name="LevelSelect" type="Control"]
+[node name="LevelSelect" type="Control" unique_id=1953805105]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_lsc")
 
-[node name="LevelSelectMenu" type="CanvasLayer" parent="."]
+[node name="LevelSelectMenu" type="CanvasLayer" parent="." unique_id=1401576864]
 unique_name_in_owner = true
 script = ExtResource("2_lsm")

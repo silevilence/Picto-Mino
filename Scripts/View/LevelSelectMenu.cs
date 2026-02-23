@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using PictoMino.Core;
@@ -41,10 +42,64 @@ public partial class LevelSelectMenu : CanvasLayer
         }
     }
 
+    private Control? _root;
+
     public override void _Ready()
     {
         CreateUI();
         Hide();
+    }
+
+    private Button? _focusedButton;
+    private List<Button> _allButtons = new();
+
+    public void NavigateFocus(int direction)
+    {
+        if (_allButtons.Count == 0) return;
+
+        int currentIndex = _focusedButton != null ? _allButtons.IndexOf(_focusedButton) : -1;
+        int newIndex = currentIndex;
+
+        for (int i = 0; i < _allButtons.Count; i++)
+        {
+            newIndex = (newIndex + direction + _allButtons.Count) % _allButtons.Count;
+            var btn = _allButtons[newIndex];
+            if (GodotObject.IsInstanceValid(btn) && !btn.Disabled)
+            {
+                SetFocusedButton(btn);
+                return;
+            }
+        }
+    }
+
+    private void SetFocusedButton(Button? button)
+    {
+        if (_focusedButton != null && GodotObject.IsInstanceValid(_focusedButton))
+        {
+            _focusedButton.ReleaseFocus();
+        }
+        _focusedButton = button;
+        _focusedButton?.GrabFocus();
+    }
+
+    public void ActivateFocusedButton()
+    {
+        if (_focusedButton != null && GodotObject.IsInstanceValid(_focusedButton) && !_focusedButton.Disabled)
+        {
+            _focusedButton.EmitSignal("pressed");
+        }
+    }
+
+    public override void _Process(double delta)
+    {
+        if (_root != null && Visible)
+        {
+            var viewportSize = GetViewport().GetVisibleRect().Size;
+            if (_root.Size != viewportSize)
+            {
+                _root.Size = viewportSize;
+            }
+        }
     }
 
     /// <summary>
@@ -54,7 +109,6 @@ public partial class LevelSelectMenu : CanvasLayer
     {
         RefreshUI();
         Show();
-        FocusFirstAvailable();
     }
 
     /// <summary>
@@ -67,12 +121,18 @@ public partial class LevelSelectMenu : CanvasLayer
 
     private void CreateUI()
     {
+        _root = new Control();
+        _root.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+        _root.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        _root.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+        AddChild(_root);
+
         var background = new ColorRect
         {
             Color = new Color(0.1f, 0.1f, 0.15f, 1f)
         };
         background.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-        AddChild(background);
+        _root.AddChild(background);
 
         var mainContainer = new MarginContainer();
         mainContainer.SetAnchorsPreset(Control.LayoutPreset.FullRect);
@@ -80,9 +140,11 @@ public partial class LevelSelectMenu : CanvasLayer
         mainContainer.AddThemeConstantOverride("margin_right", 40);
         mainContainer.AddThemeConstantOverride("margin_top", 40);
         mainContainer.AddThemeConstantOverride("margin_bottom", 40);
-        AddChild(mainContainer);
+        _root.AddChild(mainContainer);
 
         var vbox = new VBoxContainer();
+        vbox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        vbox.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
         vbox.AddThemeConstantOverride("separation", 30);
         mainContainer.AddChild(vbox);
 
@@ -92,7 +154,8 @@ public partial class LevelSelectMenu : CanvasLayer
         _backButton = new Button
         {
             Text = "← 返回",
-            CustomMinimumSize = new Vector2(100, 40)
+            CustomMinimumSize = new Vector2(100, 40),
+            FocusMode = Control.FocusModeEnum.All
         };
         _backButton.Pressed += () => OnBack?.Invoke();
         titleBar.AddChild(_backButton);
@@ -120,9 +183,13 @@ public partial class LevelSelectMenu : CanvasLayer
 
         var scrollContainer = new ScrollContainer();
         scrollContainer.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+        scrollContainer.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        scrollContainer.HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled;
+        scrollContainer.FollowFocus = true;
         vbox.AddChild(scrollContainer);
 
         _chapterContainer = new VBoxContainer();
+        _chapterContainer.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
         _chapterContainer.AddThemeConstantOverride("separation", 40);
         scrollContainer.AddChild(_chapterContainer);
     }
@@ -130,6 +197,9 @@ public partial class LevelSelectMenu : CanvasLayer
     private void RefreshUI()
     {
         if (_chapterContainer == null || _levelManager == null) return;
+
+        _allButtons.Clear();
+        _focusedButton = null;
 
         foreach (var child in _chapterContainer.GetChildren())
         {
@@ -140,6 +210,59 @@ public partial class LevelSelectMenu : CanvasLayer
         {
             CreateChapterUI(chapter);
         }
+
+        CallDeferred(nameof(SetupFocusNeighbors));
+    }
+
+    private void SetupFocusNeighbors()
+    {
+        if (_chapterContainer == null) return;
+
+        _allButtons.Clear();
+        foreach (var node in _chapterContainer.GetChildren())
+        {
+            if (node is VBoxContainer chapterBox)
+            {
+                foreach (var child in chapterBox.GetChildren())
+                {
+                    if (child is HFlowContainer grid)
+                    {
+                        foreach (var gridChild in grid.GetChildren())
+                        {
+                            if (gridChild is Button btn)
+                            {
+                                _allButtons.Add(btn);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < _allButtons.Count; i++)
+        {
+            var btn = _allButtons[i];
+            if (i > 0)
+                btn.FocusNeighborLeft = _allButtons[i - 1].GetPath();
+            if (i < _allButtons.Count - 1)
+                btn.FocusNeighborRight = _allButtons[i + 1].GetPath();
+        }
+
+        if (_backButton != null && _allButtons.Count > 0)
+        {
+            _backButton.FocusNeighborBottom = _allButtons[0].GetPath();
+            _allButtons[0].FocusNeighborTop = _backButton.GetPath();
+        }
+
+        // 自动聚焦第一个可用按钮
+        foreach (var btn in _allButtons)
+        {
+            if (!btn.Disabled)
+            {
+                SetFocusedButton(btn);
+                break;
+            }
+        }
     }
 
     private void CreateChapterUI(LevelChapter chapter)
@@ -147,6 +270,7 @@ public partial class LevelSelectMenu : CanvasLayer
         if (_chapterContainer == null || _levelManager == null) return;
 
         var chapterBox = new VBoxContainer();
+        chapterBox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
         chapterBox.AddThemeConstantOverride("separation", 15);
         _chapterContainer.AddChild(chapterBox);
 
@@ -158,9 +282,14 @@ public partial class LevelSelectMenu : CanvasLayer
         chapterBox.AddChild(chapterLabel);
 
         var gridContainer = new HFlowContainer();
+        gridContainer.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
         gridContainer.AddThemeConstantOverride("h_separation", 15);
         gridContainer.AddThemeConstantOverride("v_separation", 15);
+        gridContainer.ClipContents = false;
         chapterBox.AddChild(gridContainer);
+
+        var spacer = new Control { CustomMinimumSize = new Vector2(4, 0) };
+        gridContainer.AddChild(spacer);
 
         for (int i = 0; i < chapter.Levels.Length; i++)
         {
@@ -179,7 +308,8 @@ public partial class LevelSelectMenu : CanvasLayer
         var button = new Button
         {
             CustomMinimumSize = LevelButtonSize,
-            Disabled = !isUnlocked
+            Disabled = !isUnlocked,
+            FocusMode = Control.FocusModeEnum.All
         };
 
         if (!isUnlocked)
