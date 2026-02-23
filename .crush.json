@@ -1,22 +1,17 @@
 {
     "$schema": "https://charm.land/crush.json",
     "options": {
-        "initialize_as": ".github/copilot-instructions.md"
+        "initialize_as": ".github/copilot-instructions.md",
+        "skills_paths": [
+            "./github/prompts"
+        ],
+        "attribution": {
+            "trailer_style": "assisted-by",
+            "generated_with": true
+        }
     },
     "tools": {
         "ls": {},
         "grep": {}
-    },
-    "lsp": {
-        "csharp": {
-            "command": "csharp-ls",
-            "args": [
-                "-s",
-                "./PictoMino.slnx"
-            ],
-            "filetypes": [
-                "cs"
-            ]
-        }
     }
 }

@@ -13,7 +13,7 @@ config_version=5
 config/name="PictoMino"
 run/main_scene="res://Scenes/LevelSelect.tscn"
 config/features=PackedStringArray("4.6", "C#", "GL Compatibility")
-config/icon="res://icon.svg"
+config/icon="uid://6k1k25l7i7wd"
 
 [autoload]
 
