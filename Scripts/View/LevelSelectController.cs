@@ -29,23 +29,31 @@ public partial class LevelSelectController : Control
 
         if (Godot.Input.IsActionJustPressed("cursor_right") || Godot.Input.IsActionJustPressed("ui_right"))
         {
+            GameSession.Instance.LastInputWasGamepad = true;
             _levelSelectMenu.NavigateFocus(1);
         }
         else if (Godot.Input.IsActionJustPressed("cursor_left") || Godot.Input.IsActionJustPressed("ui_left"))
         {
+            GameSession.Instance.LastInputWasGamepad = true;
             _levelSelectMenu.NavigateFocus(-1);
         }
         else if (Godot.Input.IsActionJustPressed("cursor_down") || Godot.Input.IsActionJustPressed("ui_down"))
         {
+            GameSession.Instance.LastInputWasGamepad = true;
             _levelSelectMenu.NavigateFocus(1);
         }
         else if (Godot.Input.IsActionJustPressed("cursor_up") || Godot.Input.IsActionJustPressed("ui_up"))
         {
+            GameSession.Instance.LastInputWasGamepad = true;
             _levelSelectMenu.NavigateFocus(-1);
         }
         else if (Godot.Input.IsActionJustPressed("interact_main") || Godot.Input.IsActionJustPressed("ui_accept"))
         {
             _levelSelectMenu.ActivateFocusedButton();
+        }
+        else if (Godot.Input.IsActionJustPressed("interact_secondary") || Godot.Input.IsActionJustPressed("ui_cancel"))
+        {
+            _levelSelectMenu.FocusBackButton();
         }
     }
 
@@ -56,6 +64,6 @@ public partial class LevelSelectController : Control
 
     private void OnBack()
     {
-        // 暂时无操作，后续可返回主菜单
+        GameSession.Instance.GoToTitle();
     }
 }

@@ -90,6 +90,14 @@ public partial class LevelSelectMenu : CanvasLayer
         }
     }
 
+    public void FocusBackButton()
+    {
+        if (_backButton != null && _allButtons.Contains(_backButton))
+        {
+            SetFocusedButton(_backButton);
+        }
+    }
+
     public override void _Process(double delta)
     {
         if (_root != null && Visible)
@@ -219,6 +227,12 @@ public partial class LevelSelectMenu : CanvasLayer
         if (_chapterContainer == null) return;
 
         _allButtons.Clear();
+        
+        if (_backButton != null)
+        {
+            _allButtons.Add(_backButton);
+        }
+        
         foreach (var node in _chapterContainer.GetChildren())
         {
             if (node is VBoxContainer chapterBox)
@@ -243,23 +257,23 @@ public partial class LevelSelectMenu : CanvasLayer
         {
             var btn = _allButtons[i];
             if (i > 0)
-                btn.FocusNeighborLeft = _allButtons[i - 1].GetPath();
-            if (i < _allButtons.Count - 1)
-                btn.FocusNeighborRight = _allButtons[i + 1].GetPath();
-        }
-
-        if (_backButton != null && _allButtons.Count > 0)
-        {
-            _backButton.FocusNeighborBottom = _allButtons[0].GetPath();
-            _allButtons[0].FocusNeighborTop = _backButton.GetPath();
-        }
-
-        // 自动聚焦第一个可用按钮
-        foreach (var btn in _allButtons)
-        {
-            if (!btn.Disabled)
             {
-                SetFocusedButton(btn);
+                btn.FocusNeighborLeft = _allButtons[i - 1].GetPath();
+                btn.FocusNeighborTop = _allButtons[i - 1].GetPath();
+            }
+            if (i < _allButtons.Count - 1)
+            {
+                btn.FocusNeighborRight = _allButtons[i + 1].GetPath();
+                btn.FocusNeighborBottom = _allButtons[i + 1].GetPath();
+            }
+        }
+
+        // 自动聚焦第一个可用的关卡按钮（跳过返回按钮）
+        for (int i = 1; i < _allButtons.Count; i++)
+        {
+            if (!_allButtons[i].Disabled)
+            {
+                SetFocusedButton(_allButtons[i]);
                 break;
             }
         }

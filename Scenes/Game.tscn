@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://Scripts/View/PaletteView.cs" id="5_pv"]
 [ext_resource type="Script" path="res://Scripts/View/WinOverlay.cs" id="6_wo"]
 [ext_resource type="Script" path="res://Scripts/View/Effects/DynamicBackground.cs" id="7_bg"]
+[ext_resource type="Script" path="res://Scripts/View/PauseMenu.cs" id="8_pm"]
 
 [node name="Game" type="Node"]
 script = ExtResource("1_gc")
@@ -51,3 +52,7 @@ BoardCols = 10
 [node name="WinOverlay" type="CanvasLayer" parent="."]
 unique_name_in_owner = true
 script = ExtResource("6_wo")
+
+[node name="PauseMenu" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+script = ExtResource("8_pm")

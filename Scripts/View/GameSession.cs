@@ -22,6 +22,9 @@ public partial class GameSession : Node
     /// <summary>是否已初始化关卡</summary>
     public bool IsInitialized { get; private set; }
 
+    /// <summary>上次使用的输入设备是否为键盘/手柄</summary>
+    public bool LastInputWasGamepad { get; set; } = false;
+
     public override void _EnterTree()
     {
         _instance = this;
@@ -89,5 +92,30 @@ public partial class GameSession : Node
     {
         PendingLevel = null;
         GetTree().ChangeSceneToFile("res://Scenes/LevelSelect.tscn");
+    }
+
+    /// <summary>
+    /// 前往标题场景。
+    /// </summary>
+    public void GoToTitle()
+    {
+        PendingLevel = null;
+        GetTree().ChangeSceneToFile("res://Scenes/Title.tscn");
+    }
+
+    /// <summary>
+    /// 前往关卡选择场景。
+    /// </summary>
+    public void GoToLevelSelect()
+    {
+        GetTree().ChangeSceneToFile("res://Scenes/LevelSelect.tscn");
+    }
+
+    /// <summary>
+    /// 前往设置场景。
+    /// </summary>
+    public void GoToSettings()
+    {
+        GetTree().ChangeSceneToFile("res://Scenes/Settings.tscn");
     }
 }

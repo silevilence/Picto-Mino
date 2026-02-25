@@ -86,7 +86,19 @@ public partial class InputDirector : Node
 		}
 
 		InitializeStrategies();
-		SwitchToDevice(InputDeviceType.Mouse);
+		
+		// 根据上次使用的输入设备初始化
+		var session = GameSession.Instance;
+		if (session != null && session.LastInputWasGamepad)
+		{
+			SwitchToDevice(InputDeviceType.Gamepad);
+			_gamepadStrategy?.SetCursorPosition(new Vector2I(BoardCols / 2, BoardRows / 2));
+			OnGhostPositionChanged?.Invoke(new Vector2I(BoardCols / 2, BoardRows / 2));
+		}
+		else
+		{
+			SwitchToDevice(InputDeviceType.Mouse);
+		}
 	}
 
 	public override void _UnhandledInput(InputEvent @event)
@@ -116,6 +128,20 @@ public partial class InputDirector : Node
 	}
 
 	/// <summary>
+	/// 重置光标到棋盘中心。
+	/// </summary>
+	public void ResetCursorToCenter()
+	{
+		var centerPos = new Vector2I(BoardCols / 2, BoardRows / 2);
+		_gamepadStrategy?.SetCursorPosition(centerPos);
+		
+		if (_currentDevice == InputDeviceType.Gamepad)
+		{
+			OnGhostPositionChanged?.Invoke(centerPos);
+		}
+	}
+
+	/// <summary>
 	/// 强制切换到指定输入设备。
 	/// </summary>
 	public void SwitchToDevice(InputDeviceType device)
@@ -135,10 +161,25 @@ public partial class InputDirector : Node
 			_ => _mouseStrategy
 		};
 
-		// 切换到手柄时,同步光标位置
-		if (device == InputDeviceType.Gamepad && currentPos.HasValue && _gamepadStrategy != null)
+		// 保存输入设备类型到 GameSession
+		var session = GameSession.Instance;
+		if (session != null)
 		{
-			_gamepadStrategy.SetCursorPosition(currentPos.Value);
+			session.LastInputWasGamepad = (device == InputDeviceType.Gamepad);
+		}
+
+		// 切换到手柄时,同步光标位置或使用棋盘中心
+		if (device == InputDeviceType.Gamepad && _gamepadStrategy != null)
+		{
+			if (currentPos.HasValue && currentPos.Value.X >= 0 && currentPos.Value.Y >= 0 
+			    && currentPos.Value.X < BoardCols && currentPos.Value.Y < BoardRows)
+			{
+				_gamepadStrategy.SetCursorPosition(currentPos.Value);
+			}
+			else
+			{
+				_gamepadStrategy.SetCursorPosition(new Vector2I(BoardCols / 2, BoardRows / 2));
+			}
 		}
 
 		_activeStrategy?.OnActivate();

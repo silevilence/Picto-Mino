@@ -29,6 +29,7 @@ public partial class GameController : Node
 	private GhostHand? _ghostHand;
 	private PaletteView? _paletteView;
 	private WinOverlay? _winOverlay;
+	private PauseMenu? _pauseMenu;
 
 	/// <summary>默认棋盘行数</summary>
 	[Export] public int DefaultRows { get; set; } = 10;
@@ -148,12 +149,39 @@ public partial class GameController : Node
 		_ghostHand?.QueueRedraw();
 	}
 
+	private bool _escPressedLastFrame = false;
+
 	public override void _Process(double delta)
 	{
 		if (_gameState == GameState.Playing)
 		{
 			_levelElapsedTime += (float)delta;
+			
+			if (Godot.Input.IsActionJustPressed("pause_game"))
+			{
+				ShowPauseMenu();
+			}
 		}
+	}
+
+	/// <summary>
+	/// 显示暂停菜单。
+	/// </summary>
+	public void ShowPauseMenu()
+	{
+		if (_gameState != GameState.Playing) return;
+		
+		SetGameState(GameState.Paused);
+		_pauseMenu?.ShowMenu();
+	}
+
+	/// <summary>
+	/// 隐藏暂停菜单并继续游戏。
+	/// </summary>
+	public void HidePauseMenu()
+	{
+		_pauseMenu?.HideMenu();
+		SetGameState(GameState.Playing);
 	}
 
 	/// <summary>
@@ -181,6 +209,9 @@ public partial class GameController : Node
 
 		SetGameState(GameState.Playing);
 		UpdateLayout();
+		
+		_inputDirector?.ResetCursorToCenter();
+		
 		GD.Print($"GameController: Loaded level '{level.Name}'.");
 	}
 
@@ -247,6 +278,7 @@ public partial class GameController : Node
 		_ghostHand = GetNodeOrNull<GhostHand>("%GhostHand");
 		_paletteView = GetNodeOrNull<PaletteView>("%PaletteView");
 		_winOverlay = GetNodeOrNull<WinOverlay>("%WinOverlay");
+		_pauseMenu = GetNodeOrNull<PauseMenu>("%PauseMenu");
 	}
 
 	public void InitializeGame(int rows = 0, int cols = 0, bool[,]? target = null)
@@ -365,6 +397,14 @@ public partial class GameController : Node
 			_winOverlay.OnRetry += OnWinRetry;
 			_winOverlay.OnBackToMenu += OnWinBackToMenu;
 		}
+
+		if (_pauseMenu != null)
+		{
+			_pauseMenu.OnResume += OnPauseResume;
+			_pauseMenu.OnBackToLevelSelect += OnPauseBackToLevelSelect;
+			_pauseMenu.OnBackToTitle += OnPauseBackToTitle;
+			_pauseMenu.OnExit += OnPauseExit;
+		}
 	}
 
 	private void OnPaletteSelectionChanged(int oldIndex, int newIndex)
@@ -423,6 +463,28 @@ public partial class GameController : Node
 		BackToLevelSelect();
 	}
 
+	private void OnPauseResume()
+	{
+		HidePauseMenu();
+	}
+
+	private void OnPauseBackToLevelSelect()
+	{
+		_pauseMenu?.HideMenu();
+		BackToLevelSelect();
+	}
+
+	private void OnPauseBackToTitle()
+	{
+		_pauseMenu?.HideMenu();
+		GameSession.Instance?.GoToTitle();
+	}
+
+	private void OnPauseExit()
+	{
+		GetTree().Quit();
+	}
+
 	private void OnGhostPositionChanged(Vector2I gridPos)
 	{
 		if (_ghostHand == null || _boardData == null) return;
@@ -464,6 +526,7 @@ public partial class GameController : Node
 
 	private void OnCancel()
 	{
+		// 取消操作只取消选择，不打开暂停菜单
 		if (_gameState != GameState.Playing) return;
 
 		_paletteData?.Deselect();

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Godot;
 using PictoMino.View.Effects;
 
@@ -16,6 +17,8 @@ public partial class WinOverlay : CanvasLayer
     private Button? _nextLevelButton;
     private Button? _retryButton;
     private Button? _menuButton;
+    private List<Button> _buttons = new();
+    private int _focusedIndex = 0;
 
     /// <summary>标题文本</summary>
     [Export] public string TitleText { get; set; } = "恭喜过关！";
@@ -39,6 +42,55 @@ public partial class WinOverlay : CanvasLayer
     {
         CreateUI();
         Hide();
+    }
+
+    public override void _Process(double delta)
+    {
+        if (!Visible) return;
+
+        if (Godot.Input.IsActionJustPressed("cursor_left") || Godot.Input.IsActionJustPressed("ui_left"))
+        {
+            GameSession.Instance.LastInputWasGamepad = true;
+            NavigateFocus(-1);
+        }
+        else if (Godot.Input.IsActionJustPressed("cursor_right") || Godot.Input.IsActionJustPressed("ui_right"))
+        {
+            GameSession.Instance.LastInputWasGamepad = true;
+            NavigateFocus(1);
+        }
+        else if (Godot.Input.IsActionJustPressed("interact_main") || Godot.Input.IsActionJustPressed("ui_accept"))
+        {
+            ActivateFocusedButton();
+        }
+    }
+
+    private void NavigateFocus(int direction)
+    {
+        var visibleButtons = _buttons.FindAll(b => b.Visible);
+        if (visibleButtons.Count == 0) return;
+
+        int currentIdx = visibleButtons.IndexOf(_buttons[_focusedIndex]);
+        if (currentIdx < 0) currentIdx = 0;
+
+        currentIdx = (currentIdx + direction + visibleButtons.Count) % visibleButtons.Count;
+        _focusedIndex = _buttons.IndexOf(visibleButtons[currentIdx]);
+        UpdateFocusVisual();
+    }
+
+    private void ActivateFocusedButton()
+    {
+        if (_focusedIndex >= 0 && _focusedIndex < _buttons.Count && _buttons[_focusedIndex].Visible)
+        {
+            _buttons[_focusedIndex].EmitSignal("pressed");
+        }
+    }
+
+    private void UpdateFocusVisual()
+    {
+        for (int i = 0; i < _buttons.Count; i++)
+        {
+            _buttons[i].Modulate = (i == _focusedIndex) ? new Color(1.2f, 1.2f, 0.8f) : Colors.White;
+        }
     }
 
     /// <summary>
@@ -72,14 +124,8 @@ public partial class WinOverlay : CanvasLayer
 
         PlayWinParticles();
 
-        if (hasNextLevel)
-        {
-            _nextLevelButton?.GrabFocus();
-        }
-        else
-        {
-            _retryButton?.GrabFocus();
-        }
+        _focusedIndex = hasNextLevel ? 0 : 1;
+        UpdateFocusVisual();
     }
 
     private void PlayWinParticles()
@@ -166,26 +212,32 @@ public partial class WinOverlay : CanvasLayer
         _nextLevelButton = new Button
         {
             Text = "下一关",
-            CustomMinimumSize = new Vector2(100, 40)
+            CustomMinimumSize = new Vector2(100, 40),
+            FocusMode = Control.FocusModeEnum.None
         };
         _nextLevelButton.Pressed += () => OnNextLevel?.Invoke();
         buttonContainer.AddChild(_nextLevelButton);
+        _buttons.Add(_nextLevelButton);
 
         _retryButton = new Button
         {
             Text = "重试",
-            CustomMinimumSize = new Vector2(100, 40)
+            CustomMinimumSize = new Vector2(100, 40),
+            FocusMode = Control.FocusModeEnum.None
         };
         _retryButton.Pressed += () => OnRetry?.Invoke();
         buttonContainer.AddChild(_retryButton);
+        _buttons.Add(_retryButton);
 
         _menuButton = new Button
         {
             Text = "菜单",
-            CustomMinimumSize = new Vector2(100, 40)
+            CustomMinimumSize = new Vector2(100, 40),
+            FocusMode = Control.FocusModeEnum.None
         };
         _menuButton.Pressed += () => OnBackToMenu?.Invoke();
         buttonContainer.AddChild(_menuButton);
+        _buttons.Add(_menuButton);
     }
 
     private static string FormatTime(float seconds)
