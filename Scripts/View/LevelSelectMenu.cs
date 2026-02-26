@@ -15,6 +15,8 @@ public partial class LevelSelectMenu : CanvasLayer
     private VBoxContainer? _chapterContainer;
     private Label? _titleLabel;
     private Button? _backButton;
+    private Button? _importButton;
+    private FileDialog? _fileDialog;
 
     /// <summary>关卡按钮尺寸</summary>
     [Export] public Vector2 LevelButtonSize { get; set; } = new Vector2(80, 80);
@@ -28,6 +30,11 @@ public partial class LevelSelectMenu : CanvasLayer
     /// 当点击返回时触发。
     /// </summary>
     public event Action? OnBack;
+
+    /// <summary>
+    /// 当导入外部关卡时触发。参数为关卡数据。
+    /// </summary>
+    public event Action<LevelData>? OnImportLevel;
 
     /// <summary>
     /// 绑定的关卡管理器。
@@ -189,6 +196,17 @@ public partial class LevelSelectMenu : CanvasLayer
         };
         titleBar.AddChild(progressLabel);
 
+        _importButton = new Button
+        {
+            Text = "📂 导入关卡",
+            CustomMinimumSize = new Vector2(120, 40),
+            FocusMode = Control.FocusModeEnum.All
+        };
+        _importButton.Pressed += OnImportButtonPressed;
+        titleBar.AddChild(_importButton);
+
+        CreateFileDialog();
+
         var scrollContainer = new ScrollContainer();
         scrollContainer.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
         scrollContainer.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
@@ -200,6 +218,53 @@ public partial class LevelSelectMenu : CanvasLayer
         _chapterContainer.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
         _chapterContainer.AddThemeConstantOverride("separation", 40);
         scrollContainer.AddChild(_chapterContainer);
+    }
+
+    private void CreateFileDialog()
+    {
+        _fileDialog = new FileDialog
+        {
+            FileMode = FileDialog.FileModeEnum.OpenFile,
+            Access = FileDialog.AccessEnum.Filesystem,
+            Title = "选择关卡文件",
+            Size = new Vector2I(800, 600),
+            Transient = false
+        };
+        _fileDialog.AddFilter("*.level", "关卡文件");
+        _fileDialog.FileSelected += OnFileSelected;
+        AddChild(_fileDialog);
+    }
+
+    private void OnImportButtonPressed()
+    {
+        _fileDialog?.PopupCentered();
+    }
+
+    private void OnFileSelected(string path)
+    {
+        _fileDialog?.Hide();
+        
+        var level = GodotLevelLoader.LoadLevelFromExternalFile(path);
+        if (level != null)
+        {
+            OnImportLevel?.Invoke(level);
+        }
+        else
+        {
+            ShowImportError(path);
+        }
+    }
+
+    private void ShowImportError(string path)
+    {
+        var dialog = new AcceptDialog
+        {
+            Title = "导入失败",
+            DialogText = $"无法加载关卡文件:\n{path}\n\n请确保文件格式正确。",
+            Transient = false
+        };
+        AddChild(dialog);
+        dialog.PopupCentered();
     }
 
     private void RefreshUI()
@@ -231,6 +296,11 @@ public partial class LevelSelectMenu : CanvasLayer
         if (_backButton != null)
         {
             _allButtons.Add(_backButton);
+        }
+
+        if (_importButton != null)
+        {
+            _allButtons.Add(_importButton);
         }
         
         foreach (var node in _chapterContainer.GetChildren())

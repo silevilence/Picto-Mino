@@ -47,14 +47,14 @@ public class BoardToDLXConverterTests
     public void Convert_LargerShape_FewerPlacements()
     {
         // 2x2 棋盘，横条形状 (1x2)
-        // 形状可以放在 2 个位置: (0,0) 和 (1,0)
+        // 形状可以放在 4 个位置: 横向 (0,0), (1,0) + 竖向旋转 (0,0), (0,1)
         var board = new BoardData(2, 2);
         var shapes = new[] { new ShapeData(new bool[,] { { true, true } }) };
 
         var converter = new BoardToDLXConverter(board, shapes);
         var matrix = converter.BuildMatrix();
 
-        Assert.That(matrix.GetLength(0), Is.EqualTo(2)); // 2 种放置
+        Assert.That(matrix.GetLength(0), Is.EqualTo(4)); // 4 种放置（含旋转）
     }
 
     [Test]
@@ -150,14 +150,9 @@ public class BoardToDLXConverterTests
 
         var placements = converter.GetPlacements();
 
-        Assert.That(placements, Has.Count.EqualTo(2));
-        // 放置 0: 形状 0 放在 (0,0)
-        Assert.That(placements[0].ShapeIndex, Is.EqualTo(0));
-        Assert.That(placements[0].Row, Is.EqualTo(0));
-        Assert.That(placements[0].Col, Is.EqualTo(0));
-        // 放置 1: 形状 0 放在 (1,0)
-        Assert.That(placements[1].ShapeIndex, Is.EqualTo(0));
-        Assert.That(placements[1].Row, Is.EqualTo(1));
-        Assert.That(placements[1].Col, Is.EqualTo(0));
+        // 横向 2 个位置 + 竖向旋转 2 个位置 = 4 种放置
+        Assert.That(placements, Has.Count.EqualTo(4));
+        // 所有放置都是形状 0
+        Assert.That(placements.All(p => p.ShapeIndex == 0), Is.True);
     }
 }

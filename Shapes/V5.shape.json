@@ -1,0 +1,7 @@
+{
+  "id": "V5",
+  "name": "V形",
+  "matrix": ["#..", "#..", "###"],
+  "anchorRow": 1,
+  "anchorCol": 0
+}

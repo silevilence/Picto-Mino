@@ -1,0 +1,7 @@
+{
+  "id": "L5",
+  "name": "L5形",
+  "matrix": ["#.", "#.", "#.", "##"],
+  "anchorRow": 2,
+  "anchorCol": 0
+}

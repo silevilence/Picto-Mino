@@ -1,0 +1,7 @@
+{
+  "id": "C6",
+  "name": "C形",
+  "matrix": ["###", "#..", "###"],
+  "anchorRow": 1,
+  "anchorCol": 0
+}

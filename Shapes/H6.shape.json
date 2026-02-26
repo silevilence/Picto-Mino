@@ -1,0 +1,7 @@
+{
+  "id": "H6",
+  "name": "H形",
+  "matrix": ["#.#", "###", "#.#"],
+  "anchorRow": 1,
+  "anchorCol": 1
+}

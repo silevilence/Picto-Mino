@@ -1,0 +1,7 @@
+{
+  "id": "P5",
+  "name": "P形",
+  "matrix": ["##", "##", "#."],
+  "anchorRow": 1,
+  "anchorCol": 0
+}

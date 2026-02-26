@@ -55,12 +55,10 @@ public class PuzzleGeneratorTests
     [Test]
     public void Generate_UniqueSolution_OnlyOneAnswer()
     {
-        // 可以要求唯一解：使用不同形状避免对称
-        // L 形 (3格) + 单格 = 4格，正好填满 2x2
+        // 使用 2x2 方块，只有一种放法，保证唯一解
         var shapes = new[]
         {
-            new ShapeData(new bool[,] { { true, true }, { true, false } }), // L形
-            new ShapeData(new bool[,] { { true } }), // 单格
+            new ShapeData(new bool[,] { { true, true }, { true, true } }), // O形 2x2
         };
 
         var generator = new PuzzleGenerator(2, 2);

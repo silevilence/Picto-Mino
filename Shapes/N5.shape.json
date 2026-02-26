@@ -1,0 +1,7 @@
+{
+  "id": "N5",
+  "name": "N形",
+  "matrix": [".#", "##", "#.", "#."],
+  "anchorRow": 2,
+  "anchorCol": 0
+}

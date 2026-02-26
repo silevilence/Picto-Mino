@@ -34,7 +34,7 @@ public partial class TitleController : Control
 
     private void OnLevelEditor()
     {
-        GD.Print("Level Editor - Coming soon");
+        GameSession.Instance.GoToLevelEditor();
     }
 
     private void OnSettings()

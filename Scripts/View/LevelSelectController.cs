@@ -19,6 +19,7 @@ public partial class LevelSelectController : Control
             _levelSelectMenu.LevelManager = GameSession.Instance.LevelManager;
             _levelSelectMenu.OnLevelSelected += OnLevelSelected;
             _levelSelectMenu.OnBack += OnBack;
+            _levelSelectMenu.OnImportLevel += OnImportLevel;
             _levelSelectMenu.ShowMenu();
         }
     }
@@ -65,5 +66,10 @@ public partial class LevelSelectController : Control
     private void OnBack()
     {
         GameSession.Instance.GoToTitle();
+    }
+
+    private void OnImportLevel(LevelData level)
+    {
+        GameSession.Instance.StartLevel(level);
     }
 }

@@ -1,0 +1,7 @@
+{
+  "id": "Y5",
+  "name": "Y形",
+  "matrix": [".#", "##", ".#", ".#"],
+  "anchorRow": 1,
+  "anchorCol": 1
+}

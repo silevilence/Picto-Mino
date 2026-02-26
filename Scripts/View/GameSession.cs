@@ -118,4 +118,12 @@ public partial class GameSession : Node
     {
         GetTree().ChangeSceneToFile("res://Scenes/Settings.tscn");
     }
+
+    /// <summary>
+    /// 前往关卡编辑器场景。
+    /// </summary>
+    public void GoToLevelEditor()
+    {
+        GetTree().ChangeSceneToFile("res://Scenes/LevelEditor.tscn");
+    }
 }
