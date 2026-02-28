@@ -21,6 +21,15 @@ public class BoardToDLXConverter
     
     // 形状分组：相同形状归为一组，用于计算重复解的除数
     private readonly List<int> _shapeGroupCounts;
+    
+    // 超时支持
+    private DateTime _deadline = DateTime.MaxValue;
+    private bool _timedOut;
+
+    /// <summary>
+    /// 矩阵构建是否超时
+    /// </summary>
+    public bool TimedOut => _timedOut;
 
     public BoardToDLXConverter(BoardData board, ShapeData[] shapes)
     {
@@ -108,9 +117,12 @@ public class BoardToDLXConverter
     /// <summary>
     /// 构建精确覆盖矩阵。
     /// </summary>
+    /// <param name="deadline">超时截止时间</param>
     /// <returns>0-1 矩阵 [放置方式, 列]</returns>
-    public int[,] BuildMatrix()
+    public int[,] BuildMatrix(DateTime? deadline = null)
     {
+        _deadline = deadline ?? DateTime.MaxValue;
+        _timedOut = false;
         _placements.Clear();
         _targetCells.Clear();
         _cellToColumnIndex.Clear();
@@ -198,11 +210,25 @@ public class BoardToDLXConverter
     {
         for (int shapeIdx = 0; shapeIdx < _shapes.Length; shapeIdx++)
         {
+            // 每个形状处理前检查超时
+            if (DateTime.Now > _deadline)
+            {
+                _timedOut = true;
+                return;
+            }
+
             var baseShape = _shapes[shapeIdx];
             var rotations = GetUniqueRotations(baseShape);
 
             foreach (var shape in rotations)
             {
+                // 每个旋转处理前检查超时
+                if (DateTime.Now > _deadline)
+                {
+                    _timedOut = true;
+                    return;
+                }
+
                 for (int r = 0; r <= _board.Rows - shape.Rows; r++)
                 {
                     for (int c = 0; c <= _board.Cols - shape.Cols; c++)

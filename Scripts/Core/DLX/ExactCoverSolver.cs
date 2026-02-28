@@ -12,21 +12,31 @@ public class ExactCoverSolver
     private readonly List<int> _currentSolution;
     private readonly List<List<int>> _allSolutions;
     private bool _stopAtFirst;
+    private int _maxSolutions = int.MaxValue;
+    private DateTime _deadline = DateTime.MaxValue;
+    private int _searchIterations;
+    private bool _timedOut;
 
     /// <summary>矩阵列数</summary>
     public int ColumnCount { get; }
 
     /// <summary>矩阵行数</summary>
     public int RowCount { get; }
+    
+    /// <summary>是否因超时而中止</summary>
+    public bool TimedOut => _timedOut;
 
     /// <summary>
     /// 从 0-1 矩阵构建 DLX 数据结构。
     /// </summary>
     /// <param name="matrix">0-1 矩阵，matrix[row, col] 为 1 表示该行覆盖该列</param>
-    public ExactCoverSolver(int[,] matrix)
+    /// <param name="deadline">超时截止时间</param>
+    public ExactCoverSolver(int[,] matrix, DateTime? deadline = null)
     {
         RowCount = matrix.GetLength(0);
         ColumnCount = matrix.GetLength(1);
+        _deadline = deadline ?? DateTime.MaxValue;
+        _timedOut = false;
 
         if (RowCount == 0 || ColumnCount == 0)
             throw new ArgumentException("Matrix cannot be empty.");
@@ -55,6 +65,13 @@ public class ExactCoverSolver
         // 创建每行的节点
         for (int r = 0; r < RowCount; r++)
         {
+            // 每 100 行检查一次超时
+            if (r % 100 == 0 && DateTime.Now > _deadline)
+            {
+                _timedOut = true;
+                return;
+            }
+
             DLXNode? rowFirst = null;
 
             for (int c = 0; c < ColumnCount; c++)
@@ -91,9 +108,23 @@ public class ExactCoverSolver
     /// <returns>所有解的列表，每个解是选中行索引的列表</returns>
     public List<List<int>> SolveAll()
     {
+        return SolveAll(int.MaxValue);
+    }
+
+    /// <summary>
+    /// 查找最多 maxCount 个解。
+    /// </summary>
+    /// <param name="maxCount">最大解数量</param>
+    /// <param name="deadline">超时截止时间</param>
+    /// <returns>解的列表</returns>
+    public List<List<int>> SolveAll(int maxCount, DateTime? deadline = null)
+    {
         _allSolutions.Clear();
         _currentSolution.Clear();
         _stopAtFirst = false;
+        _maxSolutions = maxCount;
+        _deadline = deadline ?? DateTime.MaxValue;
+        _searchIterations = 0;
         Search();
         return new List<List<int>>(_allSolutions);
     }
@@ -101,12 +132,15 @@ public class ExactCoverSolver
     /// <summary>
     /// 查找第一个解。
     /// </summary>
+    /// <param name="deadline">超时截止时间</param>
     /// <returns>第一个解（选中行索引的列表），无解返回 null</returns>
-    public List<int>? SolveOne()
+    public List<int>? SolveOne(DateTime? deadline = null)
     {
         _allSolutions.Clear();
         _currentSolution.Clear();
         _stopAtFirst = true;
+        _deadline = deadline ?? DateTime.MaxValue;
+        _searchIterations = 0;
         Search();
         return _allSolutions.Count > 0 ? _allSolutions[0] : null;
     }
@@ -132,9 +166,24 @@ public class ExactCoverSolver
     /// </summary>
     private void Search()
     {
+        // 若已超时，则停止
+        if (_timedOut)
+            return;
+
         // 若已找到解且只需一个解，则停止
         if (_stopAtFirst && _allSolutions.Count > 0)
             return;
+
+        // 若已达到最大解数量，停止
+        if (_allSolutions.Count >= _maxSolutions)
+            return;
+
+        // 超时检查（每 10 次迭代检查一次，降低开销同时保证及时响应）
+        if (++_searchIterations % 10 == 0 && DateTime.Now > _deadline)
+        {
+            _timedOut = true;
+            return;
+        }
 
         // 若所有列都被覆盖，找到一个解
         if (_header.Right == _header)
@@ -153,6 +202,13 @@ public class ExactCoverSolver
         // 遍历该列的每一行
         for (var row = column.Down; row != column; row = row.Down)
         {
+            // 快速超时检查
+            if (_timedOut)
+            {
+                column.UncoverColumn();
+                return;
+            }
+
             _currentSolution.Add(row.RowIndex);
 
             // 覆盖该行涉及的所有其他列

@@ -108,7 +108,7 @@ Assert.That(eventRow, Is.EqualTo(0));
 - **坐标系:** 使用 `(row, col)` 顺序，row 对应 Y 轴
 - **形状 ID:** 正整数表示占据，0 表示空格
 - **TDD:** 先写测试 → 实现 Core → 最后集成 View
-- **ROADMAP.md:** 只读，禁止Agent修改，只允许人工更新
+- **ROADMAP.md:** 只读，禁止Agent修改，只允许人工更新，但提交时要一起提交
 
 ## Git Commits
 

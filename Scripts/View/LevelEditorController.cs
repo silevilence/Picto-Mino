@@ -870,17 +870,17 @@ public partial class LevelEditorController : Control
         UpdateStatus();
         _statusLabel!.Text += "\n🔍 搜索中...";
 
-        // 异步搜索（避免UI卡顿）
-        var result = selector.FindUniqueSolution();
+        // 搜索并获取详细结果
+        var outcome = selector.FindUniqueSolutionWithDetails();
 
-        if (result != null)
+        if (outcome.Result == ShapeSelectResult.Found && outcome.ShapeIndices != null)
         {
             // 清空当前选择
             _selectedShapes.Clear();
             _selectedShapeIds.Clear();
 
             // 添加找到的形状
-            foreach (var idx in result)
+            foreach (var idx in outcome.ShapeIndices)
             {
                 _selectedShapes.Add(allShapes[idx]);
                 _selectedShapeIds.Add(allShapeIds[idx]);
@@ -888,12 +888,39 @@ public partial class LevelEditorController : Control
 
             RefreshSelectedShapes();
             UpdateStatus();
-            ShowMessage("找到唯一解配置 ✓", $"已自动选择 {result.Count} 个形状。");
+            ShowMessage("找到唯一解配置 ✓", 
+                $"已自动选择 {outcome.ShapeIndices.Count} 个形状。\n" +
+                $"搜索用时 {outcome.ElapsedMs}ms，检查 {outcome.SearchCount} 个组合。");
         }
         else
         {
             UpdateStatus();
-            ShowMessage("未找到", "在限定时间内未找到能产生唯一解的形状组合。\n\n建议：\n• 调整目标图案\n• 增加目标格数");
+            string title = outcome.Result switch
+            {
+                ShapeSelectResult.Timeout => "搜索超时",
+                ShapeSelectResult.TargetTooLarge => "目标过大",
+                ShapeSelectResult.NoShapes => "无可用形状",
+                ShapeSelectResult.NoValidPlacements => "形状无法放置",
+                _ => "未找到唯一解"
+            };
+            
+            string detail = outcome.Result switch
+            {
+                ShapeSelectResult.Timeout => 
+                    $"搜索用时 {outcome.ElapsedMs}ms，检查了 {outcome.SearchCount} 个组合。\n\n" +
+                    "建议：\n• 减少目标格数\n• 手动选择形状",
+                ShapeSelectResult.TargetTooLarge => 
+                    outcome.Message + "\n\n建议减少目标格数或手动选择形状。",
+                ShapeSelectResult.NoShapes => 
+                    "没有可用的形状库。\n\n请确保 Shapes 目录中有形状文件。",
+                ShapeSelectResult.NoValidPlacements => 
+                    outcome.Message + "\n\n目标形状可能太不规则，没有形状能放入。",
+                _ => 
+                    $"检查了 {outcome.SearchCount} 个组合，剪枝 {outcome.PruneCount} 次。\n\n" +
+                    "建议：\n• 调整目标图案\n• 使用更多不同形状"
+            };
+            
+            ShowMessage(title, detail);
         }
     }
 
